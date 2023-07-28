@@ -1,41 +1,50 @@
 import React, { useEffect, useState } from 'react'
+import WeatherApp from './components/WeatherApp'
 
 const App = () => {
-	const [weather, setWeather] = useState([])
+	const [weather, setWeather] = useState()
+	const [query, setQuery] = useState('warsaw')
 	const [error, setError] = useState('')
 
-  useEffect(() => {
-    getdata()
-  }, [])
-  
+	useEffect(() => {
+		let timeout = setTimeout(() => {
+			getdata()
+		}, 700)
+    return() => clearTimeout(timeout)
+
+	}, [query])
+
 	const getdata = async () => {
 		try {
 			const response = await fetch(
-				'https://api.openweathermap.org/data/2.5/weather?q=Warsaw&appid=2eb1577a404e87825c6ca6cd498d5cf5'
+				`https://api.openweathermap.org/data/2.5/weather?q=${query}&appid=b8f337afbc9706d3f8db77374b959a7d`
 			)
-			const data = await response.json()
-			
-      setWeather(data)
-      
+			console.log(response)
+			if (response.ok) {
+				const data = await response.json()
+				setError('')
+				setWeather(data)
+			} else {
+				setError('nie znaleziono miasta')
+			}
 		} catch (error) {
 			setError(error)
 		}
 	}
-  console.log(weather)
+	if (!weather) {
+		return 'loading'
+	}
 
-	return <div>
-    
-  </div>
+	return (
+		<div>
+			<input onChange={e => setQuery(e.target.value)} value={query} placeholder='Podaj nazwę mista' />
+
+			{!error ? <WeatherApp data={weather} /> : <p>Brak miasta</p>}
+		</div>
+	)
 }
 
 export default App
-
-
-
-
-
-
-
 
 // https://api.openweathermap.org/data/2.5/weather?q={Warsaw&appid={b8f337afbc9706d3f8db77374b959a7d}
 
